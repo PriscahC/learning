@@ -1,0 +1,53 @@
+Build "Flood Watch" — a polished, decision-maker-facing web dashboard that monitors flood risk across two East African cities, Nairobi and Dar es Salaam, using satellite-derived water index data, rainfall trends, and historical flood records. This is for a live demo at the Innovate for Cities conference, so it needs to look like a real operational tool used by city planners and disaster response agencies — credible, data-dense, and visually striking, not a generic admin template.
+
+Add a city switcher in the top bar (a segmented control or dropdown: "Nairobi" / "Dar es Salaam") that instantly swaps every data-driven view — KPIs, map center and risk overlay, neighborhood list, river corridors, trends charts, and alerts feed — to the selected city. Keep the exact same UI/layout/components for both cities; only the underlying city dataset changes. Persist the selected city in app state so navigating between pages keeps the same city selected. Structure the mock data layer as one config object per city with an identical shape (center coordinates, river corridors, flood-prone neighborhoods grouped by corridor, NDWI/rainfall/risk time series, alerts) so the rest of the app stays city-agnostic.
+
+CITY DATA — NAIROBI
+Map center: -1.2921, 36.8219. Nairobi has 37 officially mapped flood-prone neighborhoods clustered along the Nairobi, Mathare, and Ngong river corridors:
+
+North corridor (Mathare River): Mathare, Korogocho, Lucky Summer, Kiambiu
+Central corridor (Nairobi River): CBD, Globe, Gikomba, Eastleigh, Industrial Area
+South corridor (Ngong River): Kibera, Kilimani, South B, South C, Mukuru Kwa Reuben, Mukuru Kwa Njenga
+East (downstream): Dandora, Kariobangi, Kayole, Komarock, Njiru, Ruai, Mwiki, Donholm, Savannah, Tassia, Fedha
+West (upstream/midstream): Madaraka, Lang'ata, Kawangware, Kangemi, Lavington, Westlands, Parklands, Kileleshwa, Chiromo
+Kenya's long rains (March–May) and short rains (October–December) drive most flood events. Reference the 2024 long-rains floods and the March 2026 flood event as annotated markers on trends charts. Mitigation case study: the Nairobi Rivers Regeneration Programme (riparian corridor restoration across all 37 mapped areas).
+CITY DATA — DAR ES SALAAM
+Map center: -6.7924, 39.2083. Flooding is driven by the Msimbazi River (35km long, ~271 km² catchment) and its tributaries (Sinza, Ubungo/Lubungo, Luhanga, Kinyerezi, Zimbiri, Tandale, Makurumla), plus the separate Ng'ombe River:
+
+Upper Msimbazi corridor: Kinyerezi, Segerea, Ukonga, Gongolamboto, Tabata, Vingunguti
+Mid Msimbazi corridor: Buguruni, Kigogo, Tandale, Mchikichini, Mzimuni, Magomeni, Hananasif
+Lower Msimbazi / CBD corridor: Jangwani, Upanga West, Ilala, Kariakoo
+Ng'ombe River corridor: Mabibo Relini
+Other historically flood-affected zones: Mbagala, Kigamboni Tuangoma, Mburahati, Mtoni Kijichi, Msasani, Kipawa
+Tanzania's Masika long rains (March–May) and Vuli short rains (October–December) drive most flood events — note in the UI that this seasonal window overlaps with Nairobi's, since it's a genuine cross-city pattern worth surfacing. Reference April 2023, January 2024, and December 2019 (river rose 2+ meters, Jangwani/Mkwajuni/Kigogo bridges impassable) as annotated markers on trends charts. Mitigation case study: the Msimbazi Basin Development Project (World Bank/Spain/Netherlands funded, ~$260M, 2022-2028) — river dredging, terracing, and converting the most hazardous floodplain into a green park with resettlement/compensation for displaced households.
+OVERALL LAYOUT
+A single-page app with a persistent left sidebar (logo "Flood Watch", nav items: Overview, Risk Map, Trends, Alerts, Mitigation Insights, Data Sources) and a top bar showing the city switcher, "Last updated" timestamp, current city-wide risk level badge, and a date range selector. Dark, data-ops aesthetic (think emergency operations center) with a deep navy/charcoal base (~#16243F), a water-blue accent palette (~#1B6FA8), and amber/red used sparingly and meaningfully for risk escalation — not decorative. Generous whitespace, crisp typography, subtle motion on data updates (numbers ticking, map pulses on alert zones). Mobile-responsive but optimized for a large conference-room display.
+
+OVERVIEW PAGE (landing view)
+A row of 4-5 KPI cards for the selected city: City-wide Flood Risk Index (0-100 gauge), Number of Active Alert Zones, Population in High-Risk Areas (estimate), 7-Day Rainfall Forecast, Rivers/River Segments Above Warning Level. Below that, a two-column layout: left side shows a compact version of the interactive risk map; right side shows a ranked list of the top 8 highest-risk neighborhoods right now, each with a colored risk pill (Low/Moderate/High/Severe), a sparkline of their risk trend over the last 14 days, and estimated households at risk. Include a banner-style alert strip if any zone is at Severe — bold, red, with a "View Details" link. Add a small "Compare Cities" toggle that shows both cities' city-wide risk index and top-3 highest-risk neighborhoods side by side — the key cross-city moment for the demo.
+
+RISK MAP (core feature — make this impressive)
+A large interactive map (use Leaflet or Mapbox GL with a free/open tile layer such as CARTO dark-matter or OpenStreetMap) that recenters and re-bounds based on the selected city. Render flood risk as a heatmap/choropleth overlay across the river corridors and named neighborhoods for the active city, color-graded from green (low) through yellow/orange (moderate/high) to deep red (severe), simulating an NDWI-derived water-extent layer: explain in a small legend that color intensity reflects Normalized Difference Water Index (NDWI) values from satellite imagery, where higher NDWI indicates greater surface water presence / saturated ground / flood extent. Overlay the active city's river system as distinct blue vector lines. Add a layer toggle control with at least: "NDWI Flood Extent," "Risk Zones," "River Corridors," "Population Density," "Drainage Infrastructure." Clicking any neighborhood polygon opens a side panel with: current risk score, NDWI trend sparkline (last 30 days), rainfall last 7/30 days, river gauge level if applicable, population estimate, and number of past flood incidents recorded. Include a time slider beneath the map so a user can scrub through the last 12 months and watch the flood-extent overlay animate/change — this is the "wow" interaction for the demo, and it must work for both cities.
+
+TRENDS (time series analytics)
+A dashboard of charts (use Recharts) for the active city:
+
+Multi-line chart: monthly rainfall (mm) vs. historical flood incident count, 2018–2026, with the city's real annotated flood-event markers (see CITY DATA above).
+Area chart: city-wide NDWI index trend over the last 24 months, with a shaded threshold band showing the "flood risk" zone.
+Bar chart: flood incidents by neighborhood, sortable, with a toggle between "incident count" and "estimated households affected."
+A small multiples grid: 6 mini line charts comparing risk trend across that city's six highest-profile flood-prone neighborhoods.
+A seasonal calendar heatmap (GitHub-contributions style) showing daily rainfall intensity across the year to visually surface the long-rains/short-rains (or Masika/Vuli) pattern.
+ALERTS (early warning system)
+A clear, operational alert feed styled like a monitoring console, filtered to the active city: neighborhood, risk level badge, trigger reason (e.g., "NDWI threshold exceeded," "River gauge above warning level," "72-hr rainfall forecast >50mm"), time issued, and recommended action (e.g., "Notify Mathare sub-county office," "Pre-position rescue boats — Jangwani"). Include a simple 4-tier risk legend (Low/Moderate/High/Severe) with clear color coding and plain-language descriptions of what each tier means operationally. Add a mock "Subscribe to alerts" panel for officials (SMS/email toggle UI, non-functional is fine).
+
+MITIGATION & MANAGEMENT INSIGHTS
+A clean, readable insights section for the active city — not just charts, actual decision-support content — organized as cards or an accordion covering: (a) Infrastructure measures, referencing the city's real mitigation case study (Nairobi Rivers Regeneration Programme, or the Msimbazi Basin Development Project for Dar es Salaam); (b) Early warning & community measures: community-based flood spotters, SMS alert networks, evacuation route mapping for the city's highest-density flood-prone settlements; (c) Policy & land-use measures: enforcement of riparian/riverine setback zones, relocation/resettlement planning, building code enforcement in flood corridors; (d) Long-term resilience: green infrastructure, river corridor restoration, climate-adaptive urban planning. Each card should include a short rationale and a "potential impact" indicator (e.g., estimated reduction in exposed population) to make it feel like an actual planning tool, not just a list.
+
+DATA SOURCES / METHODOLOGY (footer page)
+A simple page citing the kind of inputs a real system would use, listed per city: Sentinel-2 / Landsat satellite imagery for NDWI calculation (shared methodology), Kenya Meteorological Department rainfall data and Nairobi Rivers Regeneration Programme mapping for Nairobi, and Tanzania Meteorological Authority rainfall data and the World Bank Msimbazi Basin Development Project for Dar es Salaam. Include a clear disclaimer that displayed data is illustrative/simulated for demonstration purposes.
+
+DATA
+Generate realistic mock/simulated time-series and geospatial data client-side (or as static JSON/seed files, one per city) covering the last 24 months, with believable seasonal patterns (spikes in Mar–May and Oct–Dec for both cities), a clear NDWI value range (roughly -1 to 1, with 0.2+ flagged as elevated and 0.4+ as severe), and risk scores that logically respond to rainfall and NDWI inputs. Make the data feel real and internally consistent within each city across the Overview, Map, Trends, and Alerts views (e.g., a neighborhood flagged Severe on the map should also appear at the top of the Alerts feed and in the Overview's high-risk list).
+
+TONE
+This is a civic decision-support tool, not a consumer app — prioritize clarity, credibility, and information density appropriate for mayors, county/municipal disaster-response officials, and urban planners, while still looking modern and demo-ready.
